@@ -23,7 +23,7 @@ dependencies = [
     "diffusers==0.30.3",
     "gdown",
     "gin-config",
-    "jax==0.4.28",
+    "jax[cuda12]==0.4.28",
     "jaxlib==0.4.28",
     "joblib",
     "line_profiler",
@@ -37,7 +37,7 @@ dependencies = [
     "mujoco-mjx==3.3.4",
     "mypy",
     "numpy==1.26.4",
-    "onnxruntime",
+    "onnxruntime==1.18.1",
     "onshape-to-robot==1.7.2",
     "open3d",
     "openai[realtime]",
@@ -56,17 +56,20 @@ dependencies = [
     "scipy",
     "seaborn",
     "setuptools==75.6.0",
-    "sounddevice", 
+    "sounddevice",
     "soxr",
     "textual",
     "tqdm",
     "robot-keyframe-kit",
     "wandb",
-    "zmq"
+    "zmq",
+    "tensorboard>=2.21.0",
+    "ml-dtypes>=0.4.1",
+    "ipywidgets>=8.1.8",
+    "onnx==1.15.0",
 ]
 
 [project.optional-dependencies]
-docs = ["sphinx", "sphinx-tabs", "sphinx-design", "sphinx-autobuild", "furo"]
 test = ["torch==2.3.1", "torchvision==0.18.1"]
 linux = ["jax[cuda12]==0.4.28", "pynput", "tensorboard", "torch==2.3.1", "torchvision==0.18.1"]
 macos = ["torch==2.3.1", "torchvision==0.18.1"]
