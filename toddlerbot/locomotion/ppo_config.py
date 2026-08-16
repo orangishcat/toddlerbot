@@ -41,6 +41,6 @@ class PPOConfig:
     clipping_epsilon: float = 0.2
     num_envs: int = 4096  # 4096
     render_nums: int = 20
-    batch_size: int = 512  # 512
+    batch_size: int = 256  # 512
     num_minibatches: int = 16  # 16
     seed: int = 0
