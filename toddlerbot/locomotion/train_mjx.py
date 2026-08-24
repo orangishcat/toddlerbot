@@ -31,6 +31,7 @@ import mujoco
 import numpy as np
 import numpy.typing as npt
 import torch
+import wandb
 import yaml
 from brax import base, envs
 from brax.io import model
@@ -43,7 +44,6 @@ from PIL import Image, ImageDraw, ImageFont
 from rsl_rl.utils import store_code_state
 from tqdm import tqdm
 
-import wandb
 from toddlerbot.locomotion.mjx_config import MJXConfig
 from toddlerbot.locomotion.mjx_env import MJXEnv, get_env_class
 from toddlerbot.locomotion.on_policy_runner import OnPolicyRunner
@@ -833,6 +833,7 @@ def train(
 
     def render_fn(inference_fn, current_step):
         video_dir = os.path.join(exp_folder_path, "videos")
+
         states = rollout(
             jit_reset,
             jit_step,
@@ -842,7 +843,31 @@ def train(
             train_cfg.use_rnn,
             rng,
         )
-        render_video(test_env, states, video_dir, f"{current_step}")
+
+        video_name = f"{current_step}"
+
+        render_video(
+            test_env,
+            states,
+            video_dir,
+            video_name,
+        )
+
+        video_path = os.path.join(
+            video_dir,
+            f"{video_name}.mp4",
+        )
+
+        if wandb.run is not None:
+            wandb.log(
+                {
+                    "rollout/video": wandb.Video(
+                        video_path,
+                        format="mp4",
+                    ),
+                    "env_step": current_step,
+                }
+            )
 
     times = [time.monotonic()]
     last_ckpt_step = 0

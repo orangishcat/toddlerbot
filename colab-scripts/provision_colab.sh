@@ -2,7 +2,7 @@
 set -euo pipefail
 export LD_LIBRARY_PATH=/usr/lib64-nvidia:${LD_LIBRARY_PATH:-}       # repair the linker config
 uv venv --python 3.11 --clear       # some packages don't have 3.12
-uv pip install jax[cuda]
+uv pip install jax[cuda12]
 python - <<'PY'
 import jax
 print(jax.devices())
