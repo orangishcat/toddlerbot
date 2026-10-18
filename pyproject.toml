@@ -39,7 +39,7 @@ dependencies = [
     "numpy==1.26.4",
     "onnxruntime==1.18.1",
     "onshape-to-robot==1.7.2",
-    "open3d",
+    "open3d==0.20.0",
     "openai[realtime]",
     "opencv-python==4.9.0.80",
     "optuna",
@@ -55,7 +55,10 @@ dependencies = [
     "rsl-rl-lib==2.3.3",
     "scipy",
     "seaborn",
-    "setuptools==75.6.0",
+    # setuptools==75.6.0 everywhere except linux/aarch64 (Jetson), where
+    # torch 2.13.0+cu130 sdist-build metadata requires setuptools>=77.0.3.
+    "setuptools==75.6.0; platform_machine != 'aarch64'",
+    "setuptools>=77.0.3; platform_machine == 'aarch64'",
     "sounddevice",
     "soxr",
     "textual",
@@ -70,11 +73,31 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["torch==2.3.1", "torchvision==0.18.1"]
-linux = ["jax[cuda12]==0.4.28", "pynput", "tensorboard", "torch==2.3.1", "torchvision==0.18.1"]
-macos = ["torch==2.3.1", "torchvision==0.18.1"]
-windows = ["torch==2.3.1", "torchvision==0.18.1"]
-jetson = ["Jetson.GPIO", "pyaudio", "pydub", "cuda-python", "pycuda", "pytools"]
+docs = ["sphinx", "sphinx-tabs", "sphinx-design", "sphinx-autobuild", "furo"]
+# The torch/torchvision pins below are skipped on linux/aarch64 (Jetson), where the
+# PyTorch cu130 builds are used instead (see [tool.uv.sources]).
+test = ["torch==2.3.1; platform_machine != 'aarch64'", "torchvision==0.18.1; platform_machine != 'aarch64'"]
+linux = [
+    "jax[cuda12]==0.4.28",
+    "pynput",
+    "tensorboard",
+    "torch==2.3.1; platform_machine != 'aarch64'",
+    "torchvision==0.18.1; platform_machine != 'aarch64'",
+]
+macos = ["torch==2.3.1; platform_machine != 'aarch64'", "torchvision==0.18.1; platform_machine != 'aarch64'"]
+windows = ["torch==2.3.1; platform_machine != 'aarch64'", "torchvision==0.18.1; platform_machine != 'aarch64'"]
+jetson = [
+    "Jetson.GPIO",
+    "pyaudio",
+    "pydub",
+    "cuda-python",
+    "pycuda",
+    "pytools",
+    # Generic aarch64 CUDA builds from the pytorch-cu130 index (see
+    # [tool.uv.sources]); pinned to the versions verified on the Orin Nano.
+    "torch==2.13.0+cu130; sys_platform == 'linux' and platform_machine == 'aarch64'",
+    "torchvision==0.28.0+cu130; sys_platform == 'linux' and platform_machine == 'aarch64'",
+]
 
 [tool.scikit-build]
 wheel.packages = ["toddlerbot"]  # builds C++ extensions into this package
@@ -83,3 +106,24 @@ build.verbose = true             # optional, for debugging
 [tool.sphinx]
 build-dir = "docs/_build"
 source-dir = "docs"
+
+[tool.uv]
+# embreex (an optional trimesh[easy] dependency) ships no Linux aarch64 wheel,
+# which breaks resolution on Jetson. It is not used by this codebase.
+exclude-dependencies = [
+    { package = { name = "trimesh" }, dependencies = ["embreex"] },
+]
+
+# On linux/aarch64 (Jetson) pull torch/torchvision from the PyTorch CUDA 13.0 index.
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'aarch64'" },
+]
+torchvision = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'aarch64'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
